@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ArticleRepository;
+use App\Service\UploaderHelper;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
@@ -46,5 +47,14 @@ class Article
         $this->imageFilename = $imageFilename;
 
         return $this;
+    }
+
+    public function getImagePath(): ?string
+    {
+        if(!$this->imageFilename){
+            return null;
+        }
+
+        return UploaderHelper::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$this->getImageFilename();
     }
 }
