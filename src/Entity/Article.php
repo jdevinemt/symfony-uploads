@@ -17,7 +17,7 @@ class Article
     private ?string $title = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $filename = null;
+    private ?string $imageFilename = null;
 
     public function getId(): ?int
     {
@@ -36,14 +36,14 @@ class Article
         return $this;
     }
 
-    public function getFilename(): ?string
+    public function getImageFilename(): ?string
     {
-        return $this->filename;
+        return $this->imageFilename;
     }
 
-    public function setFilename(?string $filename): static
+    public function setImageFilename(?string $imageFilename): static
     {
-        $this->filename = $filename;
+        $this->imageFilename = $imageFilename;
 
         return $this;
     }
