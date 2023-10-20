@@ -74,4 +74,13 @@ class ArticleController extends AbstractController
             'articleForm' => $form->createView()
         ]);
     }
+
+    // todo this would use a slug instead of the id in a real application
+    #[Route('/article/{id}')]
+    public function show(Article $article): Response
+    {
+        return $this->render('article/show.html.twig', [
+            'article' => $article
+        ]);
+    }
 }
