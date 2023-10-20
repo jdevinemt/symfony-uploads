@@ -22,14 +22,21 @@ class UploaderHelper
         $this->requestStackContext = $requestStackContext;
     }
 
-    public function uploadArticleImage(UploadedFile $uploadedFile): File
+    public function uploadArticleImage(File $file): File
     {
         $destination = $this->uploadsPath.'/'.self::ARTICLE_IMAGE_UPLOAD_DIR;
 
-        $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-        $newFilename = $this->slugger->slug($originalFilename).'-'.uniqid().'.'.$uploadedFile->guessExtension();
+        if($file instanceof UploadedFile){
+            $originalName = $file->getClientOriginalName();
+        }else{
+            $originalName = $file->getBasename();
+        }
 
-        return $uploadedFile->move($destination, $newFilename);
+        $newFilename = $this->slugger->slug(pathinfo($originalName, PATHINFO_FILENAME))
+            .'-'.uniqid()
+            .'.'.$file->guessExtension();
+
+        return $file->move($destination, $newFilename);
     }
 
     public function getPublicPath(string $path): string
