@@ -35,8 +35,8 @@ class AppFixtures extends Fixture
             $article = new Article();
             $article->setTitle($this->faker->sentence);
 
-            $imageFile = $this->fakeUploadImage();
-            $article->setImageFilename($imageFile->getBasename());
+            $imageFilename = $this->fakeUploadImage();
+            $article->setImageFilename($imageFilename);
 
             $manager->persist($article);
         }
@@ -44,7 +44,7 @@ class AppFixtures extends Fixture
         $manager->flush();
     }
 
-    private function fakeUploadImage(): File
+    private function fakeUploadImage(): string
     {
         $randomImage = $this->faker->randomElement(self::$images);
 

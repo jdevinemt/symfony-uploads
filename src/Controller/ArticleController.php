@@ -29,8 +29,8 @@ class ArticleController extends AbstractController
             $uploadedFile = $form->get('imageFile')->getData();
 
             if($uploadedFile){
-                $imageFile = $uploaderHelper->uploadArticleImage($uploadedFile);
-                $article->setImageFilename($imageFile->getBasename());
+                $imageFilename = $uploaderHelper->uploadArticleImage($uploadedFile);
+                $article->setImageFilename($imageFilename);
             }
 
             $em->persist($article);
@@ -58,8 +58,8 @@ class ArticleController extends AbstractController
             $uploadedFile = $form->get('imageFile')->getData();
 
             if($uploadedFile){
-                $imageFile = $uploaderHelper->uploadArticleImage($uploadedFile);
-                $article->setImageFilename($imageFile->getBasename());
+                $imageFilename = $uploaderHelper->uploadArticleImage($uploadedFile, $article->getImageFilename());
+                $article->setImageFilename($imageFilename);
             }
 
             $em->persist($article);

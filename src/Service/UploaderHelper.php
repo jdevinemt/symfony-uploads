@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use League\Flysystem\FilesystemWriter;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -11,21 +12,19 @@ class UploaderHelper
 {
     public const ARTICLE_IMAGE_UPLOAD_DIR = 'article_image';
 
-    private string $uploadsPath;
     private SluggerInterface $slugger;
     private RequestStackContext $requestStackContext;
+    private FilesystemWriter $publicUploads;
 
-    public function __construct(string $uploadsPath, SluggerInterface $slugger, RequestStackContext $requestStackContext)
+    public function __construct(FilesystemWriter $publicUploads, SluggerInterface $slugger, RequestStackContext $requestStackContext)
     {
-        $this->uploadsPath = $uploadsPath;
+        $this->publicUploads = $publicUploads;
         $this->slugger = $slugger;
         $this->requestStackContext = $requestStackContext;
     }
 
-    public function uploadArticleImage(File $file): File
+    public function uploadArticleImage(File $file, ?string $existingFilename = null): string
     {
-        $destination = $this->uploadsPath.'/'.self::ARTICLE_IMAGE_UPLOAD_DIR;
-
         if($file instanceof UploadedFile){
             $originalName = $file->getClientOriginalName();
         }else{
@@ -36,7 +35,22 @@ class UploaderHelper
             .'-'.uniqid()
             .'.'.$file->guessExtension();
 
-        return $file->move($destination, $newFilename);
+        $stream = fopen($file->getPathname(), 'r');
+
+        $this->publicUploads->writeStream(
+            self::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$newFilename,
+            $stream
+        );
+
+        if(is_resource($stream)){
+            fclose($stream);
+        }
+
+        if($existingFilename){
+            $this->publicUploads->delete(self::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$existingFilename);
+        }
+
+        return $newFilename;
     }
 
     public function getPublicPath(string $path): string
