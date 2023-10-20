@@ -3,5 +3,5 @@
 {% block title %}New Article{% endblock %}
 
 {% block body %}
-    {{ form(articleForm) }}
+    {{ include('article/_form.html.twig', {articleForm}) }}
 {% endblock %}
