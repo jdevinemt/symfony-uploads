@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -12,11 +13,13 @@ class UploaderHelper
 
     private string $uploadsPath;
     private SluggerInterface $slugger;
+    private RequestStackContext $requestStackContext;
 
-    public function __construct(string $uploadsPath, SluggerInterface $slugger)
+    public function __construct(string $uploadsPath, SluggerInterface $slugger, RequestStackContext $requestStackContext)
     {
         $this->uploadsPath = $uploadsPath;
         $this->slugger = $slugger;
+        $this->requestStackContext = $requestStackContext;
     }
 
     public function uploadArticleImage(UploadedFile $uploadedFile): File
@@ -31,6 +34,6 @@ class UploaderHelper
 
     public function getPublicPath(string $path): string
     {
-        return 'uploads/'.$path;
+        return $this->requestStackContext->getBasePath().'/uploads/'.$path;
     }
 }
