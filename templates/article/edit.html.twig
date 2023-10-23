@@ -19,22 +19,35 @@
                     action="{{ path('admin_article_add_reference', {id: article.id}) }}"
                     method="post"
                     enctype="multipart/form-data"
-            >
-                <div>
-                    <ul>
-                        {% for reference in article.articleReferences %}
-                            <li>
-                                {{ reference.originalFilename }}
-                                <span>
-                                    <a href="{{ path('admin_article_download_reference', {id: reference.id}) }}">Download</a>
-                                </span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <input type="file" name="reference" id="">
-                </div>
-                <button type="submit">Upload</button>
-            </form>
+                    class="dropzone js-reference-dropzone"
+            ></form>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script>
+        Dropzone.autoDiscover = false;
+
+        document.addEventListener('DOMContentLoaded', () => initializeDropzone());
+
+        function initializeDropzone(){
+            const formElement = document.querySelector('.js-reference-dropzone');
+            console.log(formElement);
+            if(!formElement){
+                return;
+            }
+
+            const dropzone = new Dropzone(formElement, {
+                paramName: 'reference'
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 {% endblock %}

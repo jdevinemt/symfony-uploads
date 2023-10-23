@@ -32,7 +32,7 @@ class ArticleReferenceAdminController extends AbstractController
     {
         /** @var UploadedFile|null $uploadedFile */
         $uploadedFile = $request->files->get('reference');
-
+dump($uploadedFile);
         $violations = $validator->validate(
             $uploadedFile,
             [
