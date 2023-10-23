@@ -9,8 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Constraints\File;
@@ -28,11 +28,11 @@ class ArticleReferenceAdminController extends AbstractController
         UploaderHelper $uploaderHelper,
         EntityManagerInterface $em,
         ValidatorInterface $validator
-    ): Response
+    ): JsonResponse
     {
         /** @var UploadedFile|null $uploadedFile */
         $uploadedFile = $request->files->get('reference');
-dump($uploadedFile);
+
         $violations = $validator->validate(
             $uploadedFile,
             [
@@ -53,7 +53,7 @@ dump($uploadedFile);
         if($violations->count() > 0){
             /** @var ConstraintViolation $violation */
             $violation = $violations[0];
-            return new Response('Error: '.$violation->getMessage(), 400);
+            return $this->json($violation, 400);
         }
 
         $filename = $uploaderHelper->uploadArticleReference($uploadedFile);
@@ -66,12 +66,12 @@ dump($uploadedFile);
         $em->persist($articleReference);
         $em->flush();
 
-        return $this->redirectToRoute('app_article_edit', ['id' => $article->getId()]);
+        return $this->json($articleReference, 201, [], ['groups' => 'main']);
     }
 
     // TODO add security
     #[Route('/admin/article/references/{id}/download', name: 'admin_article_download_reference', methods: ['GET'])]
-    public function downloadArticleReference(ArticleReference $reference, UploaderHelper $uploaderHelper): Response
+    public function downloadArticleReference(ArticleReference $reference, UploaderHelper $uploaderHelper): StreamedResponse
     {
         $response = new StreamedResponse(function() use ($reference, $uploaderHelper){
             $outputStream = fopen('php://output', 'wb');

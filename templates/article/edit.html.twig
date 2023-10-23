@@ -35,13 +35,20 @@
 
         function initializeDropzone(){
             const formElement = document.querySelector('.js-reference-dropzone');
-            console.log(formElement);
+
             if(!formElement){
                 return;
             }
 
-            const dropzone = new Dropzone(formElement, {
-                paramName: 'reference'
+            new Dropzone(formElement, {
+                paramName: 'reference',
+                init: function(){
+                    this.on('error', (file, data) => {
+                        if(data.message){
+                            this.emit('error', file, data.message);
+                        }
+                    });
+                }
             });
         }
     </script>
