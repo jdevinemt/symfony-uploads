@@ -7,7 +7,7 @@
     {% for article in articles %}
         <h2>{{ article.title }}</h2>
         {% if article.imagePath %}
-            <img src="{{ uploaded_asset(article.imagePath)|imagine_filter('squared_thumbnail_small') }}" alt="Article Image" height="100px">
+            <img src="{{ article.imagePath|imagine_filter('squared_thumbnail_small') }}" alt="Article Image" height="100px">
         {% endif %}
     {% endfor %}
 {% endblock %}

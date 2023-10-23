@@ -5,6 +5,6 @@
 {% block body %}
     <h1>{{ article.title }}</h1>
     {% if article.imagePath %}
-        <img src="{{ uploaded_asset(article.imagePath)|imagine_filter('squared_thumbnail_medium') }}" alt="Article Image">
+        <img src="{{ article.imagePath|imagine_filter('squared_thumbnail_medium') }}" alt="Article Image">
     {% endif %}
 {% endblock %}
