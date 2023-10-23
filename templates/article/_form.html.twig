@@ -5,11 +5,13 @@
     <div style="display:flex;">
         {{ form_row(articleForm.imageFile) }}
         {% if articleForm.vars.data.imageFilename|default(null) %}
-            <img
-                    src="{{ articleForm.vars.data.imagePath|imagine_filter('squared_thumbnail_small') }}"
-                    alt="Article Image"
-                    height="100px"
-            >
+            <a href="{{ uploaded_asset(articleForm.vars.data.imagePath) }}" target="_blank">
+                <img
+                        src="{{ articleForm.vars.data.imagePath|imagine_filter('squared_thumbnail_small') }}"
+                        alt="Article Image"
+                        height="100px"
+                >
+            </a>
         {% endif %}
     </div>
     <button type="submit">Submit</button>

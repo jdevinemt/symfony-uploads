@@ -15,12 +15,19 @@ class UploaderHelper
     private SluggerInterface $slugger;
     private RequestStackContext $requestStackContext;
     private FilesystemWriter $publicUploads;
+    private string $publicAssetBaseUrl;
 
-    public function __construct(FilesystemWriter $publicUploads, SluggerInterface $slugger, RequestStackContext $requestStackContext)
+    public function __construct(
+        FilesystemWriter $publicUploads,
+        SluggerInterface $slugger,
+        RequestStackContext $requestStackContext,
+        string $uploadedAssetsBaseUrl
+    )
     {
         $this->publicUploads = $publicUploads;
         $this->slugger = $slugger;
         $this->requestStackContext = $requestStackContext;
+        $this->publicAssetBaseUrl = $uploadedAssetsBaseUrl;
     }
 
     public function uploadArticleImage(File $file, ?string $existingFilename = null): string
@@ -55,6 +62,6 @@ class UploaderHelper
 
     public function getPublicPath(string $path): string
     {
-        return $this->requestStackContext->getBasePath().'/uploads/'.$path;
+        return $this->requestStackContext->getBasePath().$this->publicAssetBaseUrl.'/'.$path;
     }
 }

@@ -4,4 +4,4 @@ flysystem:
         public_uploads:
             adapter: 'local'
             options:
-                directory: '%kernel.project_dir%/public/uploads'
+                directory: '%kernel.project_dir%/public/%uploads_dir_name%'
