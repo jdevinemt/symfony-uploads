@@ -63,13 +63,22 @@
                 }
             });
         }
-        
+
         class ReferenceList
         {
             constructor(element){
                 this.element = element;
                 this.references = [];
                 this.render();
+
+                document.addEventListener('click', (evt) => {
+                    if(!evt.target.classList.contains('js-reference-delete')){
+                        return;
+                    }
+
+                    this.handleReferenceDelete(evt);
+                })
+
                 fetch(this.element.dataset.url)
                     .then(response => response.json())
                     .then(references => {
@@ -82,20 +91,35 @@
             render(){
                 const itemsHtml = this.references.map(reference => {
                     return `
-<li class="list-group-item d-flex justify-content-between align-items-center">
+<li class="list-group-item d-flex justify-content-between align-items-center" data-id="${reference.id}">
     ${reference.originalFilename}
     <span>
         <a href="/admin/article/references/${reference.id}/download">Download</a>
+        <button class="js-reference-delete">Delete</button>
     </span>
 </li>
 `
                 });
+
                 this.element.innerHTML = itemsHtml.join('');
             }
 
             addReference(reference){
                 this.references.push(reference);
                 this.render();
+            }
+
+            handleReferenceDelete(evt){
+                const li = evt.target.closest('li');
+                const id = li.dataset.id;
+                li.style.opacity = 0.5;
+                fetch('/admin/article/references/'+id, {
+                    method: 'DELETE'
+                })
+                    .then(() => {
+                        this.references = this.references.filter(reference => reference.id != id);
+                        this.render();
+                    });
             }
         }
     </script>

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Constraints\File;
@@ -96,5 +97,21 @@ class ArticleReferenceAdminController extends AbstractController
     public function getArticleReferences(Article $article): JsonResponse
     {
         return $this->json($article->getArticleReferences(), 200, [], ['groups' => 'main']);
+    }
+
+    // TODO add security
+    #[Route('/admin/article/references/{id}', name: 'admin_article_reference_delete', methods: ['DELETE'])]
+    public function deleteArticleReference(
+        ArticleReference $articleReference,
+        UploaderHelper $uploaderHelper,
+        EntityManagerInterface $em
+    ): Response
+    {
+        $em->remove($articleReference);
+        $em->flush();
+
+        $uploaderHelper->deleteFile($articleReference->getFilePath(), false);
+
+        return new Response(null, 204);
     }
 }

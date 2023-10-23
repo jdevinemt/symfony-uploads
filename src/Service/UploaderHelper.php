@@ -45,6 +45,13 @@ class UploaderHelper
         return $filesystem->readStream($path);
     }
 
+    public function deleteFile(string $path, bool $isPublic)
+    {
+        $filesystem = $isPublic ? $this->publicUploads : $this->privateUploads;
+
+        $filesystem->delete($path);
+    }
+
     public function uploadArticleImage(File $file, ?string $existingFilename = null): string
     {
         $newFilename = $this->uploadFile($file, self::ARTICLE_IMAGE_DIR, true);
