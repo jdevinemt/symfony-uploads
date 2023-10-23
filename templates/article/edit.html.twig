@@ -3,5 +3,24 @@
 {% block title %}Edit Article{% endblock %}
 
 {% block body %}
-    {{ include('article/_form.html.twig', {articleForm}) }}
+    <h1>Edit the Article</h1>
+
+    <hr>
+
+    <div style="display:flex;">
+        <div>
+            <h3>Details</h3>
+            {{ include('article/_form.html.twig', {articleForm}) }}
+        </div>
+        <div>
+            <h3>References</h3>
+
+            <form action="" method="post" enctype="multipart/form-data">
+                <div>
+                    <input type="file" name="reference" id="">
+                </div>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+    </div>
 {% endblock %}

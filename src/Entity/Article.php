@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ArticleRepository;
 use App\Service\UploaderHelper;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
@@ -19,6 +21,14 @@ class Article
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageFilename = null;
+
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: ArticleReference::class)]
+    private Collection $articleReferences;
+
+    public function __construct()
+    {
+        $this->articleReferences = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -56,5 +66,13 @@ class Article
         }
 
         return UploaderHelper::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$this->getImageFilename();
+    }
+
+    /**
+     * @return Collection<int, ArticleReference>
+     */
+    public function getArticleReferences(): Collection
+    {
+        return $this->articleReferences;
     }
 }
