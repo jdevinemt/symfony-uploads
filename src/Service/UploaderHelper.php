@@ -10,27 +10,52 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class UploaderHelper
 {
-    public const ARTICLE_IMAGE_UPLOAD_DIR = 'article_image';
+    public const ARTICLE_IMAGE_DIR = 'article_image';
+    public const ARTICLE_REFERENCE_DIR = 'article_reference';
 
+    private FilesystemWriter $publicUploads;
+    private FilesystemWriter $privateUploads;
     private SluggerInterface $slugger;
     private RequestStackContext $requestStackContext;
-    private FilesystemWriter $publicUploads;
     private string $publicAssetBaseUrl;
 
     public function __construct(
         FilesystemWriter $publicUploads,
+        FilesystemWriter $privateUploads,
         SluggerInterface $slugger,
         RequestStackContext $requestStackContext,
         string $uploadedAssetsBaseUrl
     )
     {
         $this->publicUploads = $publicUploads;
+        $this->privateUploads = $privateUploads;
         $this->slugger = $slugger;
         $this->requestStackContext = $requestStackContext;
         $this->publicAssetBaseUrl = $uploadedAssetsBaseUrl;
     }
 
     public function uploadArticleImage(File $file, ?string $existingFilename = null): string
+    {
+        $newFilename = $this->uploadFile($file, self::ARTICLE_IMAGE_DIR, true);
+
+        if($existingFilename){
+            $this->publicUploads->delete(self::ARTICLE_IMAGE_DIR.'/'.$existingFilename);
+        }
+
+        return $newFilename;
+    }
+
+    public function uploadArticleReference(File $file): string
+    {
+        return $this->uploadFile($file, self::ARTICLE_REFERENCE_DIR, false);
+    }
+
+    public function getPublicPath(string $path): string
+    {
+        return $this->requestStackContext->getBasePath().$this->publicAssetBaseUrl.'/'.$path;
+    }
+
+    private function uploadFile(File $file, string $directory, bool $isPublic): string
     {
         if($file instanceof UploadedFile){
             $originalName = $file->getClientOriginalName();
@@ -44,8 +69,10 @@ class UploaderHelper
 
         $stream = fopen($file->getPathname(), 'r');
 
-        $this->publicUploads->writeStream(
-            self::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$newFilename,
+        $filesystem = $isPublic ? $this->publicUploads : $this->privateUploads;
+
+        $filesystem->writeStream(
+            $directory.'/'.$newFilename,
             $stream
         );
 
@@ -53,20 +80,6 @@ class UploaderHelper
             fclose($stream);
         }
 
-        if($existingFilename){
-            $this->publicUploads->delete(self::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$existingFilename);
-        }
-
         return $newFilename;
-    }
-
-    public function getPublicPath(string $path): string
-    {
-        return $this->requestStackContext->getBasePath().$this->publicAssetBaseUrl.'/'.$path;
-    }
-
-    public function uploadArticleReference(File $file): string
-    {
-        dd($file);
     }
 }

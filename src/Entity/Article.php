@@ -65,7 +65,7 @@ class Article
             return null;
         }
 
-        return UploaderHelper::ARTICLE_IMAGE_UPLOAD_DIR.'/'.$this->getImageFilename();
+        return UploaderHelper::ARTICLE_IMAGE_DIR.'/'.$this->getImageFilename();
     }
 
     /**
