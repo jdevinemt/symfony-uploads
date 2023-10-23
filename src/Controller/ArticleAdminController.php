@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ArticleAdminController extends AbstractController
 {
     // TODO add security
-    #[Route('/article/new', name: 'app_article_new')]
+    #[Route('/admin/article/new', name: 'admin_article_new')]
     public function new(Request $request, EntityManagerInterface $em, UploaderHelper $uploaderHelper): Response
     {
         $form = $this->createForm(ArticleFormType::class);
@@ -37,7 +37,7 @@ class ArticleAdminController extends AbstractController
             $em->persist($article);
             $em->flush();
 
-            return $this->redirectToRoute('app_article_edit', [
+            return $this->redirectToRoute('admin_article_edit', [
                 'id' => $article->getId()
             ]);
         }
@@ -48,7 +48,7 @@ class ArticleAdminController extends AbstractController
     }
 
     // TODO add security
-    #[Route('/article/{id}/edit', name: 'app_article_edit')]
+    #[Route('/admin/article/{id}/edit', name: 'admin_article_edit')]
     public function edit(Article $article, Request $request, EntityManagerInterface $em, UploaderHelper $uploaderHelper): Response
     {
         $form = $this->createForm(ArticleFormType::class, $article);
@@ -67,7 +67,7 @@ class ArticleAdminController extends AbstractController
             $em->persist($article);
             $em->flush();
 
-            return $this->redirectToRoute('app_article_edit', [
+            return $this->redirectToRoute('admin_article_edit', [
                 'id' => $article->getId()
             ]);
         }
