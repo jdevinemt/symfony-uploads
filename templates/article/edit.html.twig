@@ -15,6 +15,8 @@
         <div>
             <h3>References</h3>
 
+            <ul class="js-reference-list" data-url="{{ path('admin_article_references', {id: article.id}) }}"></ul>
+
             <form
                     action="{{ path('admin_article_add_reference', {id: article.id}) }}"
                     method="post"
@@ -31,9 +33,15 @@
     <script>
         Dropzone.autoDiscover = false;
 
-        document.addEventListener('DOMContentLoaded', () => initializeDropzone());
+        document.addEventListener('DOMContentLoaded', () => {
+            const referenceList = new ReferenceList(document.querySelector('.js-reference-list'));
+            initializeDropzone(referenceList);
+        });
 
-        function initializeDropzone(){
+        /**
+         * @param {ReferenceList} referenceList
+         */
+        function initializeDropzone(referenceList){
             const formElement = document.querySelector('.js-reference-dropzone');
 
             if(!formElement){
@@ -43,6 +51,10 @@
             new Dropzone(formElement, {
                 paramName: 'reference',
                 init: function(){
+                    this.on('success', (file, data) => {
+                        referenceList.addReference(data);
+                    });
+
                     this.on('error', (file, data) => {
                         if(data.message){
                             this.emit('error', file, data.message);
@@ -50,6 +62,41 @@
                     });
                 }
             });
+        }
+        
+        class ReferenceList
+        {
+            constructor(element){
+                this.element = element;
+                this.references = [];
+                this.render();
+                fetch(this.element.dataset.url)
+                    .then(response => response.json())
+                    .then(references => {
+                        this.references = references;
+                        this.render();
+                    })
+                ;
+            }
+
+            render(){
+                const itemsHtml = this.references.map(reference => {
+                    return `
+<li class="list-group-item d-flex justify-content-between align-items-center">
+    ${reference.originalFilename}
+    <span>
+        <a href="/admin/article/references/${reference.id}/download">Download</a>
+    </span>
+</li>
+`
+                });
+                this.element.innerHTML = itemsHtml.join('');
+            }
+
+            addReference(reference){
+                this.references.push(reference);
+                this.render();
+            }
         }
     </script>
 {% endblock %}

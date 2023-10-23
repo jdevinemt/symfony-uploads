@@ -90,4 +90,11 @@ class ArticleReferenceAdminController extends AbstractController
 
         return $response;
     }
+
+    // TODO add security
+    #[Route('/admin/article/{id}/references', name: 'admin_article_references', methods: ['GET'])]
+    public function getArticleReferences(Article $article): JsonResponse
+    {
+        return $this->json($article->getArticleReferences(), 200, [], ['groups' => 'main']);
+    }
 }
