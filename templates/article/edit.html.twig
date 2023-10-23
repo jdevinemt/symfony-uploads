@@ -21,6 +21,16 @@
                     enctype="multipart/form-data"
             >
                 <div>
+                    <ul>
+                        {% for reference in article.articleReferences %}
+                            <li>
+                                {{ reference.originalFilename }}
+                                <span>
+                                    <a href="{{ path('admin_article_download_reference', {id: reference.id}) }}">Download</a>
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
                     <input type="file" name="reference" id="">
                 </div>
                 <button type="submit">Upload</button>

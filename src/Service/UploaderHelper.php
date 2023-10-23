@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use League\Flysystem\FilesystemOperator;
 use League\Flysystem\FilesystemWriter;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\HttpFoundation\File\File;
@@ -13,15 +14,15 @@ class UploaderHelper
     public const ARTICLE_IMAGE_DIR = 'article_image';
     public const ARTICLE_REFERENCE_DIR = 'article_reference';
 
-    private FilesystemWriter $publicUploads;
-    private FilesystemWriter $privateUploads;
+    private FilesystemOperator $publicUploads;
+    private FilesystemOperator $privateUploads;
     private SluggerInterface $slugger;
     private RequestStackContext $requestStackContext;
     private string $publicAssetBaseUrl;
 
     public function __construct(
-        FilesystemWriter $publicUploads,
-        FilesystemWriter $privateUploads,
+        FilesystemOperator $publicUploads,
+        FilesystemOperator $privateUploads,
         SluggerInterface $slugger,
         RequestStackContext $requestStackContext,
         string $uploadedAssetsBaseUrl
@@ -32,6 +33,16 @@ class UploaderHelper
         $this->slugger = $slugger;
         $this->requestStackContext = $requestStackContext;
         $this->publicAssetBaseUrl = $uploadedAssetsBaseUrl;
+    }
+
+    /**
+     * @return resource
+     */
+    public function readStream(string $path, bool $isPublic)
+    {
+        $filesystem = $isPublic ? $this->publicUploads : $this->privateUploads;
+
+        return $filesystem->readStream($path);
     }
 
     public function uploadArticleImage(File $file, ?string $existingFilename = null): string

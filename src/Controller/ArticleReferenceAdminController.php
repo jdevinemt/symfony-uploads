@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ArticleReferenceAdminController extends AbstractController
 {
+    // TODO add security
     #[Route('/admin/article/{id}/references', name: 'admin_article_add_reference', methods: ['POST'])]
     public function uploadArticleReference(
         Article $article,
@@ -64,5 +65,12 @@ class ArticleReferenceAdminController extends AbstractController
         $em->flush();
 
         return $this->redirectToRoute('app_article_edit', ['id' => $article->getId()]);
+    }
+
+    // TODO add security
+    #[Route('/admin/article/references/{id}/download', name: 'admin_article_download_reference', methods: ['GET'])]
+    public function downloadArticleReference(ArticleReference $reference, UploaderHelper $uploaderHelper): Response
+    {
+        dd($reference);
     }
 }

@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ArticleController extends AbstractController
 {
+    // TODO add security
     #[Route('/article/new', name: 'app_article_new')]
     public function new(Request $request, EntityManagerInterface $em, UploaderHelper $uploaderHelper): Response
     {
@@ -46,6 +47,7 @@ class ArticleController extends AbstractController
         ]);
     }
 
+    // TODO add security
     #[Route('/article/{id}/edit', name: 'app_article_edit')]
     public function edit(Article $article, Request $request, EntityManagerInterface $em, UploaderHelper $uploaderHelper): Response
     {
@@ -76,7 +78,7 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    // todo this would use a slug instead of the id in a real application
+    // TODO this would use a slug instead of the id in a real application
     #[Route('/article/{id}')]
     public function show(Article $article): Response
     {
