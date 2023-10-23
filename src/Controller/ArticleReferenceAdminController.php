@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ArticleReferenceAdminController extends AbstractController
 {
@@ -19,11 +23,35 @@ class ArticleReferenceAdminController extends AbstractController
         Article $article,
         Request $request,
         UploaderHelper $uploaderHelper,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        ValidatorInterface $validator
     ): Response
     {
         /** @var UploadedFile|null $uploadedFile */
         $uploadedFile = $request->files->get('reference');
+
+        $violations = $validator->validate(
+            $uploadedFile,
+            [
+                new File([
+                    'maxSize' => '5m',
+                    'mimeTypes' => [
+                        'image/*',
+                        'application/pdf',
+                        'text/plain',
+                        'application/msword',
+                        'application/vnd.ms-excel'
+                    ]
+                ]),
+                new NotBlank(['message' => 'Please select a file to upload.'])
+            ]
+        );
+
+        if($violations->count() > 0){
+            /** @var ConstraintViolation $violation */
+            $violation = $violations[0];
+            return new Response('Error: '.$violation->getMessage(), 400);
+        }
 
         $filename = $uploaderHelper->uploadArticleReference($uploadedFile);
 
