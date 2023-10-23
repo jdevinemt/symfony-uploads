@@ -64,4 +64,9 @@ class UploaderHelper
     {
         return $this->requestStackContext->getBasePath().$this->publicAssetBaseUrl.'/'.$path;
     }
+
+    public function uploadArticleReference(File $file): string
+    {
+        dd($file);
+    }
 }
