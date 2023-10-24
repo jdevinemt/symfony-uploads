@@ -12,6 +12,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.16",
         "fakerphp/faker": "^1.23",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "league/flysystem-bundle": "^3.2",
         "liip/imagine-bundle": "^2.12",
         "phpdocumentor/reflection-docblock": "^5.3",

@@ -2,10 +2,14 @@
 flysystem:
     storages:
         public_uploads:
-            adapter: 'local'
+            adapter: 'aws'
             options:
-                directory: '%kernel.project_dir%/public/%uploads_dir_name%'
+                client: Aws\S3\S3Client
+                bucket: '%env(AWS_S3_BUCKET_NAME)%'
+                streamReads: true
         private_uploads:
-            adapter: 'local'
+            adapter: 'aws'
             options:
-                directory: '%kernel.project_dir%/var/uploads'
+                client: Aws\S3\S3Client
+                bucket: '%env(AWS_S3_BUCKET_NAME)%'
+                streamReads: true
