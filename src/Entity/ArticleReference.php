@@ -6,6 +6,8 @@ use App\Repository\ArticleReferenceRepository;
 use App\Service\UploaderHelper;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ORM\Entity(repositoryClass: ArticleReferenceRepository::class)]
 class ArticleReference
@@ -25,7 +27,9 @@ class ArticleReference
     private ?string $filename = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('main')]
+    #[Groups(['main', 'input'])]
+    #[NotBlank]
+    #[Length(max: 100)]
     private ?string $originalFilename = null;
 
     #[ORM\Column(length: 255)]

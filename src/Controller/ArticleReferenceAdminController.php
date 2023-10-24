@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -113,5 +114,31 @@ class ArticleReferenceAdminController extends AbstractController
         $uploaderHelper->deleteFile($articleReference->getFilePath(), false);
 
         return new Response(null, 204);
+    }
+
+    #[Route('/admin/article/references/{id}', name: 'admin_article_reference_update', methods: ['PUT'])]
+    public function updateArticleReference(
+        ArticleReference $articleReference,
+        EntityManagerInterface $em,
+        SerializerInterface $serializer,
+        Request $request,
+        ValidatorInterface $validator
+    ): JsonResponse
+    {
+        $serializer->deserialize($request->getContent(), ArticleReference::class, 'json', [
+            'object_to_populate' => $articleReference,
+            'groups' => 'input'
+        ]);
+
+        $violations = $validator->validate($articleReference);
+
+        if($violations->count() > 0){
+            return $this->json($violations, 400);
+        }
+
+        $em->persist($articleReference);
+        $em->flush();
+
+        return $this->json($articleReference, 200, [], ['groups' => 'main']);
     }
 }

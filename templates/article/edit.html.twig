@@ -71,14 +71,6 @@
                 this.references = [];
                 this.render();
 
-                document.addEventListener('click', (evt) => {
-                    if(!evt.target.classList.contains('js-reference-delete')){
-                        return;
-                    }
-
-                    this.handleReferenceDelete(evt);
-                })
-
                 fetch(this.element.dataset.url)
                     .then(response => response.json())
                     .then(references => {
@@ -92,7 +84,7 @@
                 const itemsHtml = this.references.map(reference => {
                     return `
 <li class="list-group-item d-flex justify-content-between align-items-center" data-id="${reference.id}">
-    ${reference.originalFilename}
+    <input type="text" value="${reference.originalFilename}" class="js-edit-filename">
     <span>
         <a href="/admin/article/references/${reference.id}/download">Download</a>
         <button class="js-reference-delete">Delete</button>
@@ -102,6 +94,14 @@
                 });
 
                 this.element.innerHTML = itemsHtml.join('');
+
+                this.element.querySelectorAll('.js-reference-delete').forEach(el => {
+                    el.addEventListener('click', evt => this.handleReferenceDelete(evt));
+                });
+
+                this.element.querySelectorAll('.js-edit-filename').forEach(el => {
+                    el.addEventListener('blur', evt => this.handleEditFilename(evt));
+                });
             }
 
             addReference(reference){
@@ -120,6 +120,19 @@
                         this.references = this.references.filter(reference => reference.id != id);
                         this.render();
                     });
+            }
+
+            handleEditFilename(evt){
+                const li = evt.target.closest('li');
+                const id = li.dataset.id;
+                const reference = this.references.find(reference => reference.id == id);
+
+                reference.originalFilename = evt.target.value;
+
+                fetch('/admin/article/references/'+id, {
+                    method: 'PUT',
+                    body: JSON.stringify(reference)
+                });
             }
         }
     </script>
