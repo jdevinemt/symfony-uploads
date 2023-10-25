@@ -2,22 +2,23 @@
 
 namespace App\Controller;
 
+use App\Api\ArticleReferenceApiUploadModel;
 use App\Entity\Article;
 use App\Entity\ArticleReference;
 use App\Service\UploaderHelper;
 use Aws\S3\S3Client;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\File as FileConstraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -31,16 +32,37 @@ class ArticleReferenceAdminController extends AbstractController
         Request $request,
         UploaderHelper $uploaderHelper,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        SerializerInterface $serializer
     ): JsonResponse
     {
-        /** @var UploadedFile|null $uploadedFile */
-        $uploadedFile = $request->files->get('reference');
+        if($request->headers->get('Content-Type') === 'application/json'){
+            $uploadApiModel = $serializer->deserialize(
+                $request->getContent(),
+                ArticleReferenceApiUploadModel::class,
+                'json'
+            );
+
+            $violations = $validator->validate($uploadApiModel);
+
+            if($violations->count() > 0){
+                return $this->json($violations, 400);
+            }
+
+            $tmpPath = sys_get_temp_dir().'/sf_upload'.uniqid();
+            file_put_contents($tmpPath, $uploadApiModel->getDecodedData());
+            $uploadedFile = new File($tmpPath);
+            $originalName = $uploadedFile->getBasename();
+        }else{
+            /** @var UploadedFile|null $uploadedFile */
+            $uploadedFile = $request->files->get('reference');
+            $originalName = $uploadedFile->getClientOriginalName();
+        }
 
         $violations = $validator->validate(
             $uploadedFile,
             [
-                new File([
+                new FileConstraint([
                     'maxSize' => '5m',
                     'mimeTypes' => [
                         'image/*',
@@ -64,8 +86,12 @@ class ArticleReferenceAdminController extends AbstractController
 
         $articleReference = new ArticleReference($article);
         $articleReference->setFilename($filename);
-        $articleReference->setOriginalFilename($uploadedFile->getClientOriginalName() ?? $filename);
+        $articleReference->setOriginalFilename($originalName);
         $articleReference->setMimeType($uploadedFile->getMimeType() ?? 'application/octet-stream');
+
+        if(is_file($uploadedFile->getPathname())){
+            unlink($uploadedFile->getPathname());
+        }
 
         $em->persist($articleReference);
         $em->flush();
