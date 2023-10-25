@@ -70,7 +70,14 @@ class UploaderHelper
 
     public function getPublicPath(string $path): string
     {
-        return $this->requestStackContext->getBasePath().$this->publicAssetBaseUrl.'/'.$path;
+        $fullPath = $this->publicAssetBaseUrl.'/'.$path;
+
+        // already absolute
+        if(str_contains('://', $fullPath)){
+            return $fullPath;
+        }
+
+        return $this->requestStackContext->getBasePath().$fullPath;
     }
 
     private function uploadFile(File $file, string $directory, bool $isPublic): string
