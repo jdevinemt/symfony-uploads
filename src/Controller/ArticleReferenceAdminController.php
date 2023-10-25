@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Entity\Article;
 use App\Entity\ArticleReference;
 use App\Service\UploaderHelper;
+use Aws\S3\S3Client;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -73,24 +75,25 @@ class ArticleReferenceAdminController extends AbstractController
 
     // TODO add security
     #[Route('/admin/article/references/{id}/download', name: 'admin_article_download_reference', methods: ['GET'])]
-    public function downloadArticleReference(ArticleReference $reference, UploaderHelper $uploaderHelper): StreamedResponse
+    public function downloadArticleReference(ArticleReference $reference, S3Client $s3Client, string $s3BucketName): Response
     {
-        $response = new StreamedResponse(function() use ($reference, $uploaderHelper){
-            $outputStream = fopen('php://output', 'wb');
-            $fileStream = $uploaderHelper->readStream($reference->getFilePath());
-
-            stream_copy_to_stream($fileStream, $outputStream);
-        });
-
-        $response->headers->set('Content-Type', $reference->getMimeType());
-
         $disposition = HeaderUtils::makeDisposition(
             HeaderUtils::DISPOSITION_ATTACHMENT,
             $reference->getOriginalFilename()
         );
-        $response->headers->set('Content-Disposition', $disposition);
 
-        return $response;
+        $cmd = $s3Client->getCommand('GetObject', [
+            'Bucket' => $s3BucketName,
+            'Key' => $reference->getFilePath(),
+            'ResponseContentType' => $reference->getMimeType(),
+            'ResponseContentDisposition' => $disposition
+        ]);
+
+        $request = $s3Client->createPresignedRequest($cmd, '+30 minutes');
+
+        return new RedirectResponse((string)$request->getUri(), 302, [
+            'Content-Disposition'
+        ]);
     }
 
     // TODO add security
