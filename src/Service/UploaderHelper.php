@@ -4,6 +4,7 @@ namespace App\Service;
 
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\FilesystemWriter;
+use League\Flysystem\Visibility;
 use Symfony\Component\Asset\Context\RequestStackContext;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -14,22 +15,19 @@ class UploaderHelper
     public const ARTICLE_IMAGE_DIR = 'article_image';
     public const ARTICLE_REFERENCE_DIR = 'article_reference';
 
-    private FilesystemOperator $publicUploads;
-    private FilesystemOperator $privateUploads;
+    private FilesystemOperator $filesystem;
     private SluggerInterface $slugger;
     private RequestStackContext $requestStackContext;
     private string $publicAssetBaseUrl;
 
     public function __construct(
-        FilesystemOperator $publicUploads,
-        FilesystemOperator $privateUploads,
+        FilesystemOperator $uploads,
         SluggerInterface $slugger,
         RequestStackContext $requestStackContext,
         string $uploadedAssetsBaseUrl
     )
     {
-        $this->publicUploads = $publicUploads;
-        $this->privateUploads = $privateUploads;
+        $this->filesystem = $uploads;
         $this->slugger = $slugger;
         $this->requestStackContext = $requestStackContext;
         $this->publicAssetBaseUrl = $uploadedAssetsBaseUrl;
@@ -38,18 +36,14 @@ class UploaderHelper
     /**
      * @return resource
      */
-    public function readStream(string $path, bool $isPublic)
+    public function readStream(string $path)
     {
-        $filesystem = $isPublic ? $this->publicUploads : $this->privateUploads;
-
-        return $filesystem->readStream($path);
+        return $this->filesystem->readStream($path);
     }
 
-    public function deleteFile(string $path, bool $isPublic)
+    public function deleteFile(string $path)
     {
-        $filesystem = $isPublic ? $this->publicUploads : $this->privateUploads;
-
-        $filesystem->delete($path);
+        $this->filesystem->delete($path);
     }
 
     public function uploadArticleImage(File $file, ?string $existingFilename = null): string
@@ -57,7 +51,7 @@ class UploaderHelper
         $newFilename = $this->uploadFile($file, self::ARTICLE_IMAGE_DIR, true);
 
         if($existingFilename){
-            $this->publicUploads->delete(self::ARTICLE_IMAGE_DIR.'/'.$existingFilename);
+            $this->filesystem->delete(self::ARTICLE_IMAGE_DIR.'/'.$existingFilename);
         }
 
         return $newFilename;
@@ -94,11 +88,10 @@ class UploaderHelper
 
         $stream = fopen($file->getPathname(), 'r');
 
-        $filesystem = $isPublic ? $this->publicUploads : $this->privateUploads;
-
-        $filesystem->writeStream(
+        $this->filesystem->writeStream(
             $directory.'/'.$newFilename,
-            $stream
+            $stream,
+            ['visibility' => $isPublic ? Visibility::PUBLIC : Visibility::PRIVATE]
         );
 
         if(is_resource($stream)){

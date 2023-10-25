@@ -77,7 +77,7 @@ class ArticleReferenceAdminController extends AbstractController
     {
         $response = new StreamedResponse(function() use ($reference, $uploaderHelper){
             $outputStream = fopen('php://output', 'wb');
-            $fileStream = $uploaderHelper->readStream($reference->getFilePath(), false);
+            $fileStream = $uploaderHelper->readStream($reference->getFilePath());
 
             stream_copy_to_stream($fileStream, $outputStream);
         });
@@ -111,7 +111,7 @@ class ArticleReferenceAdminController extends AbstractController
         $em->remove($articleReference);
         $em->flush();
 
-        $uploaderHelper->deleteFile($articleReference->getFilePath(), false);
+        $uploaderHelper->deleteFile($articleReference->getFilePath());
 
         return new Response(null, 204);
     }
